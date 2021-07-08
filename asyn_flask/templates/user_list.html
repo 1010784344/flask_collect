@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>投票页面</title>
+
+</head>
+<body>
+<ul id="userList">
+    {% for key,val in users.items() %}
+        <li uid="{{ key }}">{{ val.name }} ({{ val.count }}) </li>  {# 前端显示效果 #}
+    {% endfor %}
+</ul>
+
+<script src="http://code.jquery.com/jquery-3.0.0.min.js"></script>
+<script>
+
+    {#这里面有三个 js 函数，代表3个典型的 js 代码段#}
+            {# 第一个js函数，是一个函数的定义，事件触发函数，双击之后才能触发这个函数#}
+            {# 第二个js函数，是一个函数的定义，需要被其他地方进行调用执行#}
+            {# 第三个js函数，是一个函数的执行，跟 python 中普通函数的执行是一样的#}
+
+{#一打开这个页面，只有第三个js 函数是自动执行的#}
+
+
+{#    定义事件触发函数#}
+            $(function () {
+            $('#userList').on('dblclick','li',function () {     // 给ul标签绑定事件委托
+                var uid = $(this).attr('uid');      // 设置当前标签值为uid
+                $.ajax({
+                    url:'/vote',
+                    type:'POST',
+                    data:{uid:uid},
+                    success:function (arg) {
+                        console.log(arg);
+                    }
+                })
+            });
+
+        });
+
+
+        /*
+        获取投票信息
+         */
+    {#    定义普通函数#}
+        function get_vote() {
+            $.ajax({
+                url:'/get/vote',
+                type:"GET",
+                dataType:'JSON',
+                success:function (arg) {
+                    $('#userList').empty();     // 清空id=userList标签里的所有内容
+                    $.each(arg,function (k,v) {     // 循环遍历    "1":{"name":"小黑","count":1}  键为前者，值为后者
+                        var li = document.createElement('li');   // 创建li标签
+                        li.setAttribute('uid',k);   // 设置当前的属性名与属性值
+                        li.innerText = v.name + "(" + v.count + ')' ;   // 生成新的DOM
+                        $('#userList').append(li);  // 添加该标签，加上下面的2秒执行get_vode，实现轮询
+                    })
+
+                }
+            })
+        }
+
+        {#普通函数执行#}
+        setInterval(get_vote,3000);   // 3秒
+</script>
+
+
+</body>
+</html>
